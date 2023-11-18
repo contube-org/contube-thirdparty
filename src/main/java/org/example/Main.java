@@ -89,7 +89,6 @@ public class Main {
             Thread.currentThread().setContextClassLoader(defaultClassLoader);
         }
 
-        SchemaInfoProvider schemaInfoProvider = new SingleSchemaInfoProvider();
         AutoConsumeSchema schema = new AutoConsumeSchema();
 //        schema.configureSchemaInfo("contube-pulsar", "value", Schema.STRING.getSchemaInfo());
         // Produce messages
@@ -272,11 +271,6 @@ public class Main {
 
             @Override
             public void recordMetric(String metricName, double value) {
-
-            }
-
-            @Override
-            public void fatal(Throwable t) {
 
             }
         };

@@ -27,3 +27,4 @@ examples/test-result-*
 
 # Lib files
 lib/*.jar
+lib/*.nar

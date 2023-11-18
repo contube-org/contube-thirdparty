@@ -1,0 +1,13 @@
+name: pulsar-source
+type: source
+class: com.zikeyang.contube.pulsar.PulsarSourceTube
+sinkTubeName: file-sink
+config:
+  client:
+    serviceUrl: 'pulsar://localhost:6650'
+  consumer:
+    topicNames:
+      - test-topic
+    subscriptionName: 'test-subscription'
+    subscriptionType: 'Exclusive'
+    subscriptionInitialPosition: 'Latest'
