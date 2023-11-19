@@ -17,82 +17,84 @@ import org.apache.pulsar.io.core.SinkContext;
 
 @Slf4j
 public class PulsarConnectSourceTube implements Sink {
-    PulsarSinkConfig config;
-    ClassLoader connectorClassLoader;
-    org.apache.pulsar.io.core.Sink sink;
-    Context context;
-    final AutoConsumeSchema schema = new AutoConsumeSchema();
+  final AutoConsumeSchema schema = new AutoConsumeSchema();
+  PulsarSinkConfig config;
+  ClassLoader connectorClassLoader;
+  org.apache.pulsar.io.core.Sink sink;
+  Context context;
 
-    @Override
-    public void open(Map<String, Object> map, Context context) {
-        this.context = context;
-        config = Utils.loadConfig(map, PulsarSinkConfig.class);
-        String narArchive = config.getArchive();
-        Map<String, Object> connectorConfig = config.getConnectorConfig();
-        try {
-            connectorClassLoader = PulsarUtils.extractClassLoader(narArchive);
-            String sinkClassName = PulsarUtils.getSinkClassName(config.getClassName(), connectorClassLoader);
-            sink = (org.apache.pulsar.io.core.Sink<?>) Reflections.createInstance(sinkClassName, connectorClassLoader);
-        } catch (Exception e) {
-            throw new RuntimeException("Unable to load the connector", e);
-        }
-        SinkContext sinkContext = createSinkContext();
-        ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(connectorClassLoader);
-        try {
-            sink.open(connectorConfig, sinkContext);
-        } catch (Exception e) {
-            log.error("Sink open produced uncaught exception: ", e);
-            throw new RuntimeException("Unable to open the connector", e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(defaultClassLoader);
-        }
+  @Override
+  public void open(Map<String, Object> map, Context context) {
+    this.context = context;
+    config = Utils.loadConfig(map, PulsarSinkConfig.class);
+    String narArchive = config.getArchive();
+    Map<String, Object> connectorConfig = config.getConnectorConfig();
+    try {
+      connectorClassLoader = PulsarUtils.extractClassLoader(narArchive);
+      String sinkClassName =
+          PulsarUtils.getSinkClassName(config.getClassName(), connectorClassLoader);
+      sink = (org.apache.pulsar.io.core.Sink<?>) Reflections.createInstance(sinkClassName,
+          connectorClassLoader);
+    } catch (Exception e) {
+      throw new RuntimeException("Unable to load the connector", e);
     }
-
-    SinkContext createSinkContext() {
-        return new PulsarSinkContext(context.getName(), config);
+    SinkContext sinkContext = createSinkContext();
+    ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(connectorClassLoader);
+    try {
+      sink.open(connectorConfig, sinkContext);
+    } catch (Exception e) {
+      log.error("Sink open produced uncaught exception: ", e);
+      throw new RuntimeException("Unable to open the connector", e);
+    } finally {
+      Thread.currentThread().setContextClassLoader(defaultClassLoader);
     }
+  }
 
-    @Override
-    public void write(TubeRecord record) {
-        Schema<?> internalSchema = null;
-        if (record.getSchemaData().isPresent()) {
-            SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(record.getSchemaData().get());
-            internalSchema = Schema.getSchema(schemaInfo);
-            schema.setSchema(BytesSchemaVersion.of(new byte[0]), internalSchema);
-        }
-        GenericObject genericObject = schema.decode(record.getValue(), null);
-        Schema<?> finalInternalSchema = internalSchema;
-        Record<?> sinkRecord = createRecord(genericObject, finalInternalSchema);
-        ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(connectorClassLoader);
-        try {
-            sink.write(sinkRecord);
-        } catch (Exception e) {
-            log.info("Encountered exception in sink write: ", e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(defaultClassLoader);
-        }
+  SinkContext createSinkContext() {
+    return new PulsarSinkContext(context.getName(), config);
+  }
+
+  @Override
+  public void write(TubeRecord record) {
+    Schema<?> internalSchema = null;
+    if (record.getSchemaData().isPresent()) {
+      SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(record.getSchemaData().get());
+      internalSchema = Schema.getSchema(schemaInfo);
+      schema.setSchema(BytesSchemaVersion.of(new byte[0]), internalSchema);
     }
-
-    Record<?> createRecord(GenericObject genericObject, Schema<?> internalSchema) {
-        return new Record() {
-            @Override
-            public Object getValue() {
-                return genericObject;
-            }
-
-            @Override
-            public Schema<?> getSchema() {
-                return internalSchema;
-            }
-        };
+    GenericObject genericObject = schema.decode(record.getValue(), null);
+    Schema<?> finalInternalSchema = internalSchema;
+    Record<?> sinkRecord = createRecord(genericObject, finalInternalSchema);
+    ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(connectorClassLoader);
+    try {
+      sink.write(sinkRecord);
+    } catch (Exception e) {
+      log.info("Encountered exception in sink write: ", e);
+    } finally {
+      Thread.currentThread().setContextClassLoader(defaultClassLoader);
     }
+  }
 
-    @Override
-    public void close() throws Exception {
-        if (sink != null) {
-            sink.close();
-        }
+  Record<?> createRecord(GenericObject genericObject, Schema<?> internalSchema) {
+    return new Record() {
+      @Override
+      public Object getValue() {
+        return genericObject;
+      }
+
+      @Override
+      public Schema<?> getSchema() {
+        return internalSchema;
+      }
+    };
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (sink != null) {
+      sink.close();
     }
+  }
 }

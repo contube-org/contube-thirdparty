@@ -1,11 +1,10 @@
-import com.google.protobuf.gradle.*
-
 plugins {
     id("java")
-    id("com.google.protobuf") version "0.8.19"
+    `maven-publish`
+    checkstyle
 }
 
-group = "org.example"
+group = "com.zikeyang.contube"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -13,12 +12,19 @@ repositories {
     mavenCentral()
 }
 
+checkstyle {
+    toolVersion = "10.12.4"
+    configFile = file("${project.rootDir}/checkstyle/checkstyle.xml")
+    isShowViolations = true
+}
+
 dependencies {
     var pulsarVersion = "3.0.1"
+    var contubeVersion = "1.0-SNAPSHOT"
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    implementation("com.zikeyang.contube:contube-common:1.0-SNAPSHOT")
+    implementation("com.zikeyang.contube:contube-common:$contubeVersion")
     implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
     implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
     implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
@@ -26,38 +32,10 @@ dependencies {
     implementation("org.slf4j:slf4j-api:2.0.9")
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("com.google.protobuf:protobuf-java:3.6.1")
-    implementation("io.grpc:grpc-stub:1.15.1")
-    implementation("io.grpc:grpc-protobuf:1.15.1")
-    implementation("com.zikeyang.contube:contube-runtime:1.0-SNAPSHOT")
+    runtimeOnly("com.zikeyang.contube:contube-runtime:$contubeVersion")
 
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:3.6.1"
-    }
-    plugins {
-        // An artifact spec for a protoc plugin, with "grpc" as
-        // the identifier, which can be referred to in the "plugins"
-        // container of the "generateProtoTasks" closure.
-        id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.15.1"
-        }
-    }
-    generateProtoTasks {
-        ofSourceSet("main").forEach {
-            it.plugins {
-                // Apply the "grpc" plugin whose spec is defined above, without
-                // options. Note the braces cannot be omitted, otherwise the
-                // plugin will not be added. This is because of the implicit way
-                // NamedDomainObjectContainer binds the methods.
-                id("grpc") { }
-            }
-        }
-    }
 }
 
 tasks.test {
@@ -70,4 +48,14 @@ tasks.register<Copy>("copyDependencies") {
 }
 tasks.named("jar") {
     dependsOn("copyDependencies")
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("ConTube") {
+            from(components["java"])
+            artifactId = project.name
+            version = project.version.toString()
+        }
+    }
 }

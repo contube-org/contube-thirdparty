@@ -7,16 +7,16 @@ import org.apache.pulsar.common.io.SinkConfig;
 
 @Getter
 public class PulsarSinkConfig {
-    @JsonProperty(required = true)
-    private String archive;
-    private String className;
-    private Map<String, Object> connectorConfig;
+  @JsonProperty(required = true)
+  private String archive;
+  private String className;
+  private Map<String, Object> connectorConfig;
 
-    public SinkConfig convertToSinkConfig() {
-        return SinkConfig.builder()
-                .archive(archive)
-                .className(className)
-                .configs(connectorConfig)
-                .build();
-    }
+  public SinkConfig convertToSinkConfig() {
+    return SinkConfig.builder()
+        .archive(archive)
+        .className(className)
+        .configs(connectorConfig)
+        .build();
+  }
 }

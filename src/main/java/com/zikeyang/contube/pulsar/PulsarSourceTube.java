@@ -16,37 +16,38 @@ import org.apache.pulsar.client.impl.schema.AutoConsumeSchema;
 
 @Slf4j
 public class PulsarSourceTube implements Source {
-    PulsarSourceTubeConfig config;
-    PulsarClient pulsarClient;
-    Consumer<GenericRecord> consumer;
-    AutoConsumeSchema schema;
+  PulsarSourceTubeConfig config;
+  PulsarClient pulsarClient;
+  Consumer<GenericRecord> consumer;
+  AutoConsumeSchema schema;
 
-    @SneakyThrows
-    @Override
-    public void open(Map<String, Object> map, Context context) {
-        config = Utils.loadConfig(map, PulsarSourceTubeConfig.class);
-        pulsarClient = PulsarClient.builder().loadConf(config.getClient()).build();
-        schema = (AutoConsumeSchema) Schema.AUTO_CONSUME();
-        consumer = pulsarClient.newConsumer(schema).loadConf(config.getConsumer()).subscribe();
-    }
+  @SneakyThrows
+  @Override
+  public void open(Map<String, Object> map, Context context) {
+    config = Utils.loadConfig(map, PulsarSourceTubeConfig.class);
+    pulsarClient = PulsarClient.builder().loadConf(config.getClient()).build();
+    schema = (AutoConsumeSchema) Schema.AUTO_CONSUME();
+    consumer = pulsarClient.newConsumer(schema).loadConf(config.getConsumer()).subscribe();
+  }
 
-    @SneakyThrows
-    @Override
-    public TubeRecord read() {
-        Message<GenericRecord> message = consumer.receive();
-        log.info("Received message: {}", message.getMessageId());
+  @SneakyThrows
+  @Override
+  public TubeRecord read() {
+    Message<GenericRecord> message = consumer.receive();
+    log.info("Received message: {}", message.getMessageId());
 
-        Schema<?> internalSchema = schema
-                .unwrapInternalSchema(message.getSchemaVersion());
-        byte[] schemaData = PulsarUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
+    Schema<?> internalSchema = schema
+        .unwrapInternalSchema(message.getSchemaVersion());
+    byte[] schemaData =
+        PulsarUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
 
-        consumer.acknowledge(message);
-        return PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();
-    }
+    consumer.acknowledge(message);
+    return PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();
+  }
 
 
-    @Override
-    public void close() throws Exception {
-        pulsarClient.close();
-    }
+  @Override
+  public void close() throws Exception {
+    pulsarClient.close();
+  }
 }
