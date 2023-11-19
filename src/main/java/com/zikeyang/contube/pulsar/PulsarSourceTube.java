@@ -38,7 +38,7 @@ public class PulsarSourceTube implements Source {
 
         Schema<?> internalSchema = schema
                 .unwrapInternalSchema(message.getSchemaVersion());
-        byte[] schemaData = SchemaUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
+        byte[] schemaData = PulsarUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
 
         consumer.acknowledge(message);
         return PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();

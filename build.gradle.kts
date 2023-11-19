@@ -14,17 +14,21 @@ repositories {
 }
 
 dependencies {
+    var pulsarVersion = "3.0.1"
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
     implementation("com.zikeyang.contube:contube-common:1.0-SNAPSHOT")
-    implementation("org.apache.pulsar:pulsar-functions-utils:3.0.1")
-    implementation("org.apache.pulsar:pulsar-client:3.0.1")
+    implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
+    implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
+    implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
+    implementation("org.apache.bookkeeper:circe-checksum:4.16.2")
     implementation("org.slf4j:slf4j-api:2.0.9")
     implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation("com.google.protobuf:protobuf-java:3.6.1")
     implementation("io.grpc:grpc-stub:1.15.1")
     implementation("io.grpc:grpc-protobuf:1.15.1")
+    implementation("com.zikeyang.contube:contube-runtime:1.0-SNAPSHOT")
 
     compileOnly("org.projectlombok:lombok:1.18.24")
     annotationProcessor("org.projectlombok:lombok:1.18.24")
