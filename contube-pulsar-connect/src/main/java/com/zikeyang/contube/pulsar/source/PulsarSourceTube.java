@@ -22,15 +22,14 @@ public class PulsarSourceTube implements Source {
   PulsarSourceTubeConfig config;
   PulsarClient pulsarClient;
   Consumer<GenericRecord> consumer;
-  AutoConsumeSchema schema;
 
   @SneakyThrows
   @Override
   public void open(Map<String, Object> map, Context context) {
     config = Utils.loadConfig(map, PulsarSourceTubeConfig.class);
     pulsarClient = PulsarClient.builder().loadConf(config.getClient()).build();
-    schema = (AutoConsumeSchema) Schema.AUTO_CONSUME();
-    consumer = pulsarClient.newConsumer(schema).loadConf(config.getConsumer()).subscribe();
+    consumer =
+        pulsarClient.newConsumer(Schema.AUTO_CONSUME()).loadConf(config.getConsumer()).subscribe();
   }
 
   @SneakyThrows
@@ -39,14 +38,17 @@ public class PulsarSourceTube implements Source {
     Message<GenericRecord> message = consumer.receive();
     log.info("Received message: {}", message.getMessageId());
 
-    Schema<?> internalSchema = schema
-        .unwrapInternalSchema(message.getSchemaVersion());
-    byte[] schemaData =
-        PulsarUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
+    var recordBuilder =
+        PulsarTubeRecord.builder().value(message.getData());
 
-    consumer.acknowledge(message);
-    TubeRecord record =
-        PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();
+    if (message.getReaderSchema().isPresent()) {
+      Schema<?> readerSchema = message.getReaderSchema().get();
+      byte[] schemaData =
+          PulsarUtils.convertToSchemaProto(readerSchema.getSchemaInfo()).toByteArray();
+      recordBuilder.schemaData(schemaData);
+    }
+
+    TubeRecord record = recordBuilder.build();
     record.waitForCommit()
         .thenRun(() -> {
           if (log.isDebugEnabled()) {
