@@ -1,4 +1,4 @@
-package com.zikeyang.contube.pulsar;
+package com.zikeyang.contube.pulsar.connect.sink;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;

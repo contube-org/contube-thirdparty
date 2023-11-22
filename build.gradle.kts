@@ -6,56 +6,75 @@ plugins {
 
 group = "com.zikeyang.contube"
 version = "1.0-SNAPSHOT"
+var pulsarVersion = "3.0.1"
+var contubeVersion = "1.0-SNAPSHOT"
 
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
+subprojects {
+    apply(plugin = "java-library")
+    apply(plugin = "checkstyle")
+    apply(plugin = "maven-publish")
 
-checkstyle {
-    toolVersion = "10.12.4"
-    configFile = file("${project.rootDir}/checkstyle/checkstyle.xml")
-    isShowViolations = true
-}
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
 
-dependencies {
-    var pulsarVersion = "3.0.1"
-    var contubeVersion = "1.0-SNAPSHOT"
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+    checkstyle {
+        toolVersion = "10.12.4"
+        configFile = file("${project.rootDir}/checkstyle/checkstyle.xml")
+        isShowViolations = true
+    }
 
-    implementation("com.zikeyang.contube:contube-common:$contubeVersion")
-    implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
-    implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
-    implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
-    implementation("org.apache.bookkeeper:circe-checksum:4.16.2")
-    implementation("org.slf4j:slf4j-api:2.0.9")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
-    implementation("com.google.protobuf:protobuf-java:3.6.1")
-    runtimeOnly("com.zikeyang.contube:contube-runtime:$contubeVersion")
+    dependencies {
 
-    compileOnly("org.projectlombok:lombok:1.18.24")
-    annotationProcessor("org.projectlombok:lombok:1.18.24")
-}
+        testImplementation(platform("org.junit:junit-bom:5.9.1"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
 
-tasks.test {
-    useJUnitPlatform()
-}
+        implementation("com.zikeyang.contube:contube-common:$contubeVersion")
+        implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
+        implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
+        implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
+        implementation("org.apache.bookkeeper:circe-checksum:4.16.2")
+        implementation("org.slf4j:slf4j-api:2.0.9")
+        implementation("org.slf4j:slf4j-simple:2.0.9")
+        implementation("com.google.protobuf:protobuf-java:3.6.1")
 
-tasks.register<Copy>("copyDependencies") {
-    from(configurations.runtimeClasspath)
-    into("${project.rootDir}/lib")
-}
-tasks.named("jar") {
-    dependsOn("copyDependencies")
-}
+        compileOnly("org.projectlombok:lombok:1.18.24")
+        annotationProcessor("org.projectlombok:lombok:1.18.24")
+    }
 
-publishing {
-    publications {
-        create<MavenPublication>("ConTube") {
-            from(components["java"])
-            artifactId = project.name
-            version = project.version.toString()
+    tasks.test {
+        useJUnitPlatform()
+    }
+
+    tasks.register<Copy>("copyDependencies") {
+        from(configurations.runtimeClasspath)
+        into("${project.rootDir}/lib")
+    }
+    tasks.named("jar") {
+        dependsOn("copyDependencies")
+    }
+
+    publishing {
+        publications {
+            create<MavenPublication>("ConTube") {
+                from(components["java"])
+                artifactId = project.name
+                version = project.version.toString()
+            }
         }
+    }
+}
+
+project(":contube-pulsar-connect") {
+    dependencies {
+        implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
+    }
+}
+
+project(":contube-pulsar-runtime") {
+    dependencies {
+        implementation(project(":contube-pulsar-connect"))
+        implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
     }
 }

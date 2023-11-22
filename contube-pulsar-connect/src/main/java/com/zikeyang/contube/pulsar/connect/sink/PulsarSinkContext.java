@@ -1,4 +1,4 @@
-package com.zikeyang.contube.pulsar;
+package com.zikeyang.contube.pulsar.connect.sink;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;

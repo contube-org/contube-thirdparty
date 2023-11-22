@@ -1,7 +1,7 @@
 name: pulsar-source
 type: source
 class: com.zikeyang.contube.pulsar.PulsarSourceTube
-sinkTubeName: file-sink
+sinkTubeName: aws-lambda
 config:
   client:
     serviceUrl: 'pulsar://localhost:6650'

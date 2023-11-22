@@ -1,9 +1,10 @@
-package com.zikeyang.contube.pulsar;
+package com.zikeyang.contube.pulsar.connect.sink;
 
 import com.zikeyang.contube.api.Context;
 import com.zikeyang.contube.api.Sink;
 import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.Utils;
+import com.zikeyang.contube.pulsar.PulsarUtils;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Schema;
@@ -16,7 +17,7 @@ import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.io.core.SinkContext;
 
 @Slf4j
-public class PulsarConnectSourceTube implements Sink {
+public class PulsarConnectSinkTube implements Sink {
   final AutoConsumeSchema schema = new AutoConsumeSchema();
   PulsarSinkConfig config;
   ClassLoader connectorClassLoader;
@@ -57,15 +58,7 @@ public class PulsarConnectSourceTube implements Sink {
 
   @Override
   public void write(TubeRecord record) {
-    Schema<?> internalSchema = null;
-    if (record.getSchemaData().isPresent()) {
-      SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(record.getSchemaData().get());
-      internalSchema = Schema.getSchema(schemaInfo);
-      schema.setSchema(BytesSchemaVersion.of(new byte[0]), internalSchema);
-    }
-    GenericObject genericObject = schema.decode(record.getValue(), null);
-    Schema<?> finalInternalSchema = internalSchema;
-    Record<?> sinkRecord = createRecord(genericObject, finalInternalSchema);
+    Record<?> sinkRecord = convertRecord(record);
     ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(connectorClassLoader);
     try {
@@ -77,18 +70,15 @@ public class PulsarConnectSourceTube implements Sink {
     }
   }
 
-  Record<?> createRecord(GenericObject genericObject, Schema<?> internalSchema) {
-    return new Record() {
-      @Override
-      public Object getValue() {
-        return genericObject;
-      }
-
-      @Override
-      public Schema<?> getSchema() {
-        return internalSchema;
-      }
-    };
+  Record<?> convertRecord(TubeRecord record) {
+    Schema<?> internalSchema = null;
+    if (record.getSchemaData().isPresent()) {
+      SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(record.getSchemaData().get());
+      internalSchema = Schema.getSchema(schemaInfo);
+      schema.setSchema(BytesSchemaVersion.of(new byte[0]), internalSchema);
+    }
+    GenericObject genericObject = schema.decode(record.getValue(), null);
+    return new PulsarSinkRecord(record, internalSchema, genericObject);
   }
 
   @Override
