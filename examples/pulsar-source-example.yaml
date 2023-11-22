@@ -1,13 +1,13 @@
 name: pulsar-source
 type: source
-class: com.zikeyang.contube.pulsar.PulsarSourceTube
-sinkTubeName: aws-lambda
+class: com.zikeyang.contube.pulsar.source.PulsarSourceTube
+sinkTubeName: pulsar-sink
 config:
   client:
     serviceUrl: 'pulsar://localhost:6650'
   consumer:
     topicNames:
-      - test-topic
+      - input
     subscriptionName: 'test-subscription'
     subscriptionType: 'Exclusive'
     subscriptionInitialPosition: 'Latest'

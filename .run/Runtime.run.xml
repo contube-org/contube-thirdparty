@@ -2,7 +2,7 @@
   <configuration default="false" name="Runtime" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="com.zikeyang.contube.runtime.Runtime" />
     <module name="contube-pulsar.contube-pulsar-runtime.main" />
-    <option name="PROGRAM_PARAMETERS" value="conf/contube.yaml examples/*.yaml" />
+    <option name="PROGRAM_PARAMETERS" value="conf/contube.yaml examples/pulsar-sink-example.yaml examples/pulsar-source-example.yaml" />
     <option name="VM_PARAMETERS" value="-Dlog4j.configurationFile=conf/log4j2.yaml" />
     <extension name="coverage">
       <pattern>

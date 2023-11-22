@@ -1,15 +1,18 @@
-package com.zikeyang.contube.pulsar;
+package com.zikeyang.contube.pulsar.source;
 
 import com.zikeyang.contube.api.Context;
 import com.zikeyang.contube.api.Source;
 import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.Utils;
+import com.zikeyang.contube.pulsar.PulsarTubeRecord;
+import com.zikeyang.contube.pulsar.PulsarUtils;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pulsar.client.api.Consumer;
 import org.apache.pulsar.client.api.Message;
 import org.apache.pulsar.client.api.PulsarClient;
+import org.apache.pulsar.client.api.PulsarClientException;
 import org.apache.pulsar.client.api.Schema;
 import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.apache.pulsar.client.impl.schema.AutoConsumeSchema;
@@ -42,12 +45,26 @@ public class PulsarSourceTube implements Source {
         PulsarUtils.convertToSchemaProto(internalSchema.getSchemaInfo()).toByteArray();
 
     consumer.acknowledge(message);
-    return PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();
+    TubeRecord record =
+        PulsarTubeRecord.builder().value(message.getData()).schemaData(schemaData).build();
+    record.waitForCommit()
+        .thenRun(() -> {
+          if (log.isDebugEnabled()) {
+            log.info("Message has been commited: {}", message.getMessageId());
+          }
+          try {
+            consumer.acknowledge(message);
+          } catch (PulsarClientException e) {
+            log.error("Failed to acknowledge message: {}", message.getMessageId(), e);
+          }
+        });
+    return record;
   }
-
 
   @Override
   public void close() throws Exception {
-    pulsarClient.close();
+    if (pulsarClient != null) {
+      pulsarClient.close();
+    }
   }
 }

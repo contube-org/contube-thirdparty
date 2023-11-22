@@ -1,0 +1,8 @@
+name: pulsar-sink
+type: sink
+class: com.zikeyang.contube.pulsar.sink.PulsarSinkTube
+config:
+  client:
+    serviceUrl: 'pulsar://localhost:6650'
+  producer:
+    topicName: 'output'

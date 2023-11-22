@@ -5,9 +5,7 @@ import java.util.Map;
 import lombok.Getter;
 
 @Getter
-public class PulsarSourceTubeConfig {
+public class PulsarTubeConfig {
   @JsonProperty(required = true)
   private Map<String, Object> client;
-  @JsonProperty(required = true)
-  private Map<String, Object> consumer;
 }
