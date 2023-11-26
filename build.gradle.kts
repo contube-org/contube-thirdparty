@@ -66,15 +66,12 @@ subprojects {
     }
 }
 
-project(":contube-pulsar-connect") {
-    dependencies {
-        implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
-    }
+project(":contube-pulsar") {
 }
 
 project(":contube-pulsar-runtime") {
     dependencies {
-        implementation(project(":contube-pulsar-connect"))
+        implementation(project(":contube-pulsar"))
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
     }
 }
