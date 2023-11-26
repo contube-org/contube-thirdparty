@@ -6,8 +6,8 @@ plugins {
 
 group = "com.zikeyang.contube"
 version = "1.0-SNAPSHOT"
-var pulsarVersion = "3.0.1"
 var contubeVersion = "1.0-SNAPSHOT"
+var pulsarVersion = "3.0.1"
 
 subprojects {
     apply(plugin = "java-library")
@@ -26,18 +26,10 @@ subprojects {
     }
 
     dependencies {
+        implementation("com.zikeyang.contube:contube-common:$contubeVersion")
 
         testImplementation(platform("org.junit:junit-bom:5.9.1"))
         testImplementation("org.junit.jupiter:junit-jupiter")
-
-        implementation("com.zikeyang.contube:contube-common:$contubeVersion")
-        implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
-        implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
-        implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
-        implementation("org.apache.bookkeeper:circe-checksum:4.16.2")
-        implementation("org.slf4j:slf4j-api:2.0.9")
-        implementation("org.slf4j:slf4j-simple:2.0.9")
-        implementation("com.google.protobuf:protobuf-java:3.6.1")
 
         compileOnly("org.projectlombok:lombok:1.18.24")
         annotationProcessor("org.projectlombok:lombok:1.18.24")
@@ -57,7 +49,7 @@ subprojects {
 
     publishing {
         publications {
-            create<MavenPublication>("ConTube") {
+            create<MavenPublication>("ConTube-Pulsar") {
                 from(components["java"])
                 artifactId = project.name
                 version = project.version.toString()
@@ -67,11 +59,18 @@ subprojects {
 }
 
 project(":contube-pulsar") {
+    dependencies {
+        implementation("org.apache.pulsar:pulsar-functions-utils:$pulsarVersion")
+        implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
+        implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
+        implementation("org.apache.bookkeeper:circe-checksum:4.16.2")
+    }
 }
 
 project(":contube-pulsar-runtime") {
     dependencies {
         implementation(project(":contube-pulsar"))
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
+        runtimeOnly("org.apache.logging.log4j:log4j-core")
     }
 }
