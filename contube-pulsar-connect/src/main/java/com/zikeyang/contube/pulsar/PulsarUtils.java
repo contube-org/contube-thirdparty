@@ -47,7 +47,8 @@ public class PulsarUtils {
     }
   }
 
-  public static ClassLoader extractClassLoader(String userCodeFile)
+  public static ClassLoader extractClassLoader(Function.FunctionDetails.ComponentType componentType,
+                                               String userCodeFile)
       throws IOException, URISyntaxException {
     String narExtractionDirectory =
         Files.createTempDirectory("contube_pulsar_").toFile().getAbsolutePath();
@@ -55,14 +56,14 @@ public class PulsarUtils {
     if (userCodeFile != null && Utils.isFunctionPackageUrlSupported(userCodeFile)) {
       File file = FunctionCommon.extractFileFromPkgURL(userCodeFile);
       return FunctionCommon.getClassLoaderFromPackage(
-          Function.FunctionDetails.ComponentType.SINK, null, file, narExtractionDirectory);
+          componentType, null, file, narExtractionDirectory);
     } else if (userCodeFile != null) {
       File file = new File(userCodeFile);
       if (!file.exists()) {
         throw new RuntimeException("(" + userCodeFile + ") does not exist");
       }
       return FunctionCommon.getClassLoaderFromPackage(
-          Function.FunctionDetails.ComponentType.SINK, null, file, narExtractionDirectory);
+          componentType, null, file, narExtractionDirectory);
     }
     return null;
   }
@@ -89,5 +90,28 @@ public class PulsarUtils {
     }
 
     return sinkClassName;
+  }
+
+  public static String getSourceClassName(String sourceClassName, ClassLoader sourceClassLoader)
+      throws IOException {
+    if (sourceClassName == null) {
+      sourceClassName = ConnectorUtils.getIOSourceClass((NarClassLoader) sourceClassLoader);
+    }
+    if (sourceClassName == null) {
+      try {
+        sourceClassName = ConnectorUtils.getIOSourceClass((NarClassLoader) sourceClassLoader);
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Failed to extract source class from archive", e);
+      }
+    }
+    // check if sink implements the correct interfaces
+    try {
+      sourceClassLoader.loadClass(sourceClassName);
+    } catch (ClassNotFoundException e) {
+      throw new IllegalArgumentException(
+          String.format("Source class %s not found in class loader", sourceClassName), e);
+    }
+
+    return sourceClassName;
   }
 }
