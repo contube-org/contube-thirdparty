@@ -1,4 +1,4 @@
-rootProject.name = "contube-pulsar"
+rootProject.name = "contube-thirdparty"
 include("contube-pulsar")
 include("contube-pulsar-runtime")
 include("contube-kafka")
