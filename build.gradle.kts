@@ -1,5 +1,5 @@
 plugins {
-    id("java")
+    id("java-library")
     `maven-publish`
     checkstyle
 }
@@ -8,6 +8,8 @@ group = "com.zikeyang.contube"
 version = "1.0-SNAPSHOT"
 var contubeVersion = "1.0-SNAPSHOT"
 var pulsarVersion = "3.0.1"
+var kafkaVersion = "3.6.0"
+var confluentVersion = "7.5.1"
 
 subprojects {
     apply(plugin = "java-library")
@@ -17,6 +19,7 @@ subprojects {
     repositories {
         mavenLocal()
         mavenCentral()
+        maven("https://packages.confluent.io/maven/")
     }
 
     checkstyle {
@@ -26,7 +29,7 @@ subprojects {
     }
 
     dependencies {
-        implementation("com.zikeyang.contube:contube-common:$contubeVersion")
+        api("com.zikeyang.contube:contube-common:$contubeVersion")
 
         testImplementation(platform("org.junit:junit-bom:5.9.1"))
         testImplementation("org.junit.jupiter:junit-jupiter")
@@ -72,5 +75,23 @@ project(":contube-pulsar-runtime") {
         implementation(project(":contube-pulsar"))
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
         runtimeOnly("org.apache.logging.log4j:log4j-core")
+    }
+}
+
+project(":contube-kafka") {
+    dependencies {
+        implementation("org.apache.kafka:connect-runtime:$kafkaVersion")
+        implementation("org.apache.kafka:connect-json:$kafkaVersion")
+        implementation("org.apache.kafka:connect-api:$kafkaVersion")
+        implementation("io.confluent:kafka-connect-avro-converter:$confluentVersion")
+    }
+}
+
+project(":contube-kafka-runtime") {
+    dependencies {
+        implementation(project(":contube-kafka"))
+        implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
+        runtimeOnly("org.apache.logging.log4j:log4j-core")
+        runtimeOnly("io.debezium:debezium-connector-mongodb:1.9.7.Final")
     }
 }
