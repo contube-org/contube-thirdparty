@@ -80,6 +80,11 @@ project(":contube-pulsar-runtime") {
 
 project(":contube-kafka") {
     dependencies {
+        // TODO: Demo only, remove it later
+        implementation("org.apache.pulsar:pulsar-common:$pulsarVersion")
+        implementation("org.apache.pulsar:pulsar-client-original:$pulsarVersion")
+        implementation(project(":contube-pulsar"))
+        // ===
         implementation("org.apache.kafka:connect-runtime:$kafkaVersion")
         implementation("org.apache.kafka:connect-json:$kafkaVersion")
         implementation("org.apache.kafka:connect-api:$kafkaVersion")

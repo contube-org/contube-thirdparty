@@ -7,7 +7,10 @@ import com.zikeyang.contube.api.Context;
 import com.zikeyang.contube.api.Source;
 import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.RawRecord;
+import com.zikeyang.contube.kafka.connect.KafkaWrappedSchema;
+import com.zikeyang.contube.pulsar.PulsarUtils;
 import io.confluent.connect.avro.AvroConverter;
+import io.confluent.connect.avro.AvroData;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import java.util.HashMap;
@@ -39,6 +42,7 @@ public class KafkaConnectSourceTube implements Source {
   private static final String JSON_WITH_ENVELOPE_CONFIG = "json-with-envelope";
   private static final String CONNECTOR_CLASS = "kafkaConnectorSourceClass";
   private static final String DEFAULT_CONVERTER = "org.apache.kafka.connect.json.JsonConverter";
+  private static final AvroData avroData = new AvroData(1000);
   private boolean jsonWithEnvelope = false;
   public Converter keyConverter;
   public Converter valueConverter;
@@ -175,7 +179,10 @@ public class KafkaConnectSourceTube implements Source {
       byte[] valueBytes = valueConverter.fromConnectData(
           srcRecord.topic(), srcRecord.valueSchema(), srcRecord.value());
       rawRecordBuilder.value(valueBytes);
-      rawRecordBuilder.schemaData(Optional.of(srcRecord.valueSchema().toString().getBytes()));
+      KafkaWrappedSchema valueSchema = new KafkaWrappedSchema(
+          avroData.fromConnectSchema(srcRecord.valueSchema()), valueConverter);
+      rawRecordBuilder.schemaData(
+          Optional.of(PulsarUtils.convertToSchemaProto(valueSchema.getSchemaInfo()).toByteArray()));
       // TODO: Only for demo purpose: return the first record
       RawRecord record = rawRecordBuilder.build();
       record.waitForCommit().thenRun(() -> {
