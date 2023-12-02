@@ -5,6 +5,7 @@ import com.zikeyang.contube.api.Sink;
 import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.Utils;
 import com.zikeyang.contube.pulsar.PulsarUtils;
+import java.util.Collection;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,22 +30,24 @@ public class PulsarSinkTube implements Sink {
   }
 
   @Override
-  public void write(TubeRecord tubeRecord) {
-    Schema<?> schema = null;
-    if (tubeRecord.getSchemaData().isPresent()) {
-      SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(tubeRecord.getSchemaData().get());
-      schema = Schema.getSchema(schemaInfo);
-    }
-    producer.newMessage(Schema.AUTO_PRODUCE_BYTES(schema))
-        .value(tubeRecord.getValue())
-        .sendAsync()
-        .thenAccept(msgId -> {
-              if (log.isDebugEnabled()) {
-                log.debug("Message sent: {}", msgId);
+  public void write(Collection<TubeRecord> tubeRecords) {
+    for (TubeRecord tubeRecord : tubeRecords) {
+      Schema<?> schema = null;
+      if (tubeRecord.getSchemaData().isPresent()) {
+        SchemaInfo schemaInfo = PulsarUtils.convertToSchemaInfo(tubeRecord.getSchemaData().get());
+        schema = Schema.getSchema(schemaInfo);
+      }
+      producer.newMessage(Schema.AUTO_PRODUCE_BYTES(schema))
+          .value(tubeRecord.getValue())
+          .sendAsync()
+          .thenAccept(msgId -> {
+                if (log.isDebugEnabled()) {
+                  log.debug("Message sent: {}", msgId);
+                }
+                tubeRecord.commit();
               }
-              tubeRecord.commit();
-            }
-        );
+          );
+    }
   }
 
   @Override

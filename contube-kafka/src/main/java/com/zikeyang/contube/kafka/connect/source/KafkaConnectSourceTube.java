@@ -13,10 +13,11 @@ import io.confluent.connect.avro.AvroConverter;
 import io.confluent.connect.avro.AvroData;
 import io.confluent.kafka.schemaregistry.client.MockSchemaRegistryClient;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.connect.connector.ConnectorContext;
@@ -163,7 +164,7 @@ public class KafkaConnectSourceTube implements Source {
 
   @SneakyThrows
   @Override
-  public TubeRecord read() {
+  public Collection<TubeRecord> read() {
     List<SourceRecord> recordList;
     while (true) {
       recordList = sourceTask.poll();
@@ -172,6 +173,8 @@ public class KafkaConnectSourceTube implements Source {
       }
       Thread.sleep(1000);
     }
+
+    List<TubeRecord> records = new ArrayList<>(recordList.size());
 
     for (SourceRecord srcRecord : recordList) {
       offsetWriter.offset(srcRecord.sourcePartition(), srcRecord.sourceOffset());
@@ -182,8 +185,7 @@ public class KafkaConnectSourceTube implements Source {
       KafkaWrappedSchema valueSchema = new KafkaWrappedSchema(
           avroData.fromConnectSchema(srcRecord.valueSchema()), valueConverter);
       rawRecordBuilder.schemaData(
-          Optional.of(PulsarUtils.convertToSchemaProto(valueSchema.getSchemaInfo()).toByteArray()));
-      // TODO: Only for demo purpose: return the first record
+          PulsarUtils.convertToSchemaProto(valueSchema.getSchemaInfo()).toByteArray());
       RawRecord record = rawRecordBuilder.build();
       record.waitForCommit().thenRun(() -> {
         try {
@@ -192,9 +194,9 @@ public class KafkaConnectSourceTube implements Source {
           log.info("Commit record failed", e);
         }
       });
-      return record;
+      records.add(record);
     }
-    return null;
+    return records;
   }
 
   @Override

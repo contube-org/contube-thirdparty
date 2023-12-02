@@ -6,6 +6,8 @@ import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.Utils;
 import com.zikeyang.contube.pulsar.PulsarTubeRecord;
 import com.zikeyang.contube.pulsar.PulsarUtils;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +36,7 @@ public class PulsarSourceTube implements Source {
 
   @SneakyThrows
   @Override
-  public TubeRecord read() {
+  public Collection<TubeRecord> read() {
     Message<GenericRecord> message = consumer.receive();
     log.info("Received message: {}", message.getMessageId());
 
@@ -60,7 +62,7 @@ public class PulsarSourceTube implements Source {
             log.error("Failed to acknowledge message: {}", message.getMessageId(), e);
           }
         });
-    return record;
+    return Collections.singletonList(record);
   }
 
   @Override

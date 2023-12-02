@@ -6,6 +6,7 @@ import com.zikeyang.contube.api.TubeRecord;
 import com.zikeyang.contube.common.Utils;
 import com.zikeyang.contube.pulsar.PulsarUtils;
 import com.zikeyang.contube.pulsar.connect.PulsarConnectConfig;
+import java.util.Collection;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -62,17 +63,19 @@ public class PulsarConnectSinkTube implements Sink {
 
   @SneakyThrows
   @Override
-  public void write(TubeRecord record) {
-    Record<?> sinkRecord = convertRecord(record);
-    ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(connectorClassLoader);
-    try {
-      sink.write(sinkRecord);
-    } catch (Exception e) {
-      log.info("Encountered exception in sink write: ", e);
-      throw e;
-    } finally {
-      Thread.currentThread().setContextClassLoader(defaultClassLoader);
+  public void write(Collection<TubeRecord> records) {
+    for (TubeRecord tubeRecord : records) {
+      Record<?> sinkRecord = convertRecord(tubeRecord);
+      ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(connectorClassLoader);
+      try {
+        sink.write(sinkRecord);
+      } catch (Exception e) {
+        log.info("Encountered exception in sink write: ", e);
+        throw e;
+      } finally {
+        Thread.currentThread().setContextClassLoader(defaultClassLoader);
+      }
     }
   }
 

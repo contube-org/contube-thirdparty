@@ -7,6 +7,8 @@ import com.zikeyang.contube.common.Utils;
 import com.zikeyang.contube.pulsar.PulsarTubeRecord;
 import com.zikeyang.contube.pulsar.PulsarUtils;
 import com.zikeyang.contube.pulsar.connect.PulsarConnectConfig;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -54,7 +56,7 @@ public class PulsarConnectSourceTube implements Source {
 
   @SneakyThrows
   @Override
-  public TubeRecord read() {
+  public Collection<TubeRecord> read() {
     ClassLoader defaultClassLoader = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(connectorClassLoader);
     try {
@@ -70,7 +72,7 @@ public class PulsarConnectSourceTube implements Source {
       } else {
         tubeRecordBuilder.value((byte[]) record.getValue());
       }
-      return tubeRecordBuilder.build();
+      return Collections.singletonList(tubeRecordBuilder.build());
     } catch (Exception e) {
       log.info("Encountered exception in source read: ", e);
       return null;
