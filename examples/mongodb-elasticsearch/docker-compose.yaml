@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+    mongodb:
+      image: quay.io/debezium/example-mongodb:2.1
+      hostname: mongodb
+      ports:
+        - 27017:27017
+      environment:
+        - MONGODB_USER=debezium
+        - MONGODB_PASSWORD=dbz
+    elastic-search:
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.17.13
+      hostname: elastic-search
+      environment:
+        - discovery.type=single-node
+        - bootstrap.memory_lock=true
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
+        - ELASTIC_PASSWORD=ElasticPasseword
+      command: ["eswrapper", "-E", "logger.level=DEBUG"]
+      ports:
+        - 9200:9200
+        - 9300:9300
+    contube-test:
+      image: contube/contube-all
+      volumes:
+        - ./docker-example:/contube/tubes
+      depends_on:
+        - mongodb
+        - elastic-search
+    

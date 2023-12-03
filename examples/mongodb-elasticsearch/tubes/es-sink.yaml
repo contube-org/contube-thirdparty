@@ -1,0 +1,10 @@
+name: es-sink
+type: sink
+class: com.zikeyang.contube.pulsar.connect.sink.PulsarConnectSinkTube
+config:
+  archive: "./tubes/pulsar-io-elastic-search-3.1.1.nar"
+  connectorConfig:
+    elasticSearchUrl: "http://elastic-search:9200"
+    indexName: "my_index"
+    username: "elastic"
+    password: "ElasticPasseword"

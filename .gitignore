@@ -28,3 +28,6 @@ examples/test-result-*
 # Lib files
 libs/*.jar
 libs/*.nar
+
+# Examples
+examples/**/*.nar

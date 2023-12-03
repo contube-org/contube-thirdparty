@@ -1,0 +1,13 @@
+name: mongo-source
+type: source
+class: com.zikeyang.contube.kafka.connect.source.KafkaConnectSourceTube
+sinkTubeName: es-sink
+config:
+  mongodb.hosts: "rs0/mongodb:27017"
+  mongodb.connection.string: "mongodb://mongodb:27017/?replicaSet=rs0"
+  mongodb.user: "debezium"
+  mongodb.password: "dbz"
+  mongodb.authsource: "admin"
+  mongodb.name: "debezium"
+  mongodb.task.id: "1"
+  task.class: "io.debezium.connector.mongodb.MongoDbConnectorTask"

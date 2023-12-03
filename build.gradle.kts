@@ -10,6 +10,7 @@ var contubeVersion = "1.0-SNAPSHOT"
 var pulsarVersion = "3.0.1"
 var kafkaVersion = "3.6.0"
 var confluentVersion = "7.5.1"
+var log4jVersion = "2.14.1"
 
 allprojects {
     buildDir = File("${rootProject.buildDir}/${name}")
@@ -80,7 +81,7 @@ project(":contube-pulsar-runtime") {
     dependencies {
         implementation(project(":contube-pulsar"))
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
-        runtimeOnly("org.apache.logging.log4j:log4j-core")
+        runtimeOnly("org.apache.logging.log4j:log4j-core:$log4jVersion")
     }
 }
 
@@ -102,7 +103,7 @@ project(":contube-kafka-runtime") {
     dependencies {
         implementation(project(":contube-kafka"))
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
-        runtimeOnly("org.apache.logging.log4j:log4j-core")
+        runtimeOnly("org.apache.logging.log4j:log4j-core:$log4jVersion")
         runtimeOnly("io.debezium:debezium-connector-mongodb:1.9.7.Final")
     }
 }
@@ -113,7 +114,8 @@ project(":contube-all") {
     dependencies {
         runtimeOnly(project(":contube-pulsar-runtime"))
         runtimeOnly(project(":contube-kafka-runtime"))
-        runtimeOnly("org.apache.logging.log4j:log4j-core")
+        runtimeOnly("org.apache.logging.log4j:log4j-core:$log4jVersion")
+        runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion")
     }
 
     tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
