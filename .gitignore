@@ -26,5 +26,5 @@ gradle-app.setting
 examples/test-result-*
 
 # Lib files
-lib/*.jar
-lib/*.nar
+libs/*.jar
+libs/*.nar

@@ -12,6 +12,7 @@ var kafkaVersion = "3.6.0"
 var confluentVersion = "7.5.1"
 
 allprojects {
+    buildDir = File("${rootProject.buildDir}/${name}")
     group = "com.zikeyang.contube"
     version = "1.0-SNAPSHOT"
 }
@@ -49,7 +50,7 @@ subprojects {
 
     tasks.register<Copy>("copyDependencies") {
         from(configurations.runtimeClasspath)
-        into("${project.rootDir}/lib")
+        into("${project.rootDir}/libs")
     }
     tasks.named("jar") {
         dependsOn("copyDependencies")
