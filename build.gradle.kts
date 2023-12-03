@@ -2,14 +2,19 @@ plugins {
     id("java-library")
     `maven-publish`
     checkstyle
+    id("com.github.johnrengelman.shadow") version "7.0.0"
 }
 
-group = "com.zikeyang.contube"
-version = "1.0-SNAPSHOT"
+
 var contubeVersion = "1.0-SNAPSHOT"
 var pulsarVersion = "3.0.1"
 var kafkaVersion = "3.6.0"
 var confluentVersion = "7.5.1"
+
+allprojects {
+    group = "com.zikeyang.contube"
+    version = "1.0-SNAPSHOT"
+}
 
 subprojects {
     apply(plugin = "java-library")
@@ -98,5 +103,21 @@ project(":contube-kafka-runtime") {
         implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
         runtimeOnly("org.apache.logging.log4j:log4j-core")
         runtimeOnly("io.debezium:debezium-connector-mongodb:1.9.7.Final")
+    }
+}
+
+project(":contube-all") {
+    apply(plugin = "com.github.johnrengelman.shadow")
+
+    dependencies {
+        runtimeOnly(project(":contube-pulsar-runtime"))
+        runtimeOnly(project(":contube-kafka-runtime"))
+        runtimeOnly("org.apache.logging.log4j:log4j-core")
+    }
+
+    tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+        archiveBaseName.set(project.name)
+        archiveClassifier.set("")
+        archiveVersion.set(project.version.toString())
     }
 }
