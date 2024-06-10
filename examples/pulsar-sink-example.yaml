@@ -1,6 +1,6 @@
 name: pulsar-sink
 type: sink
-class: com.zikeyang.contube.pulsar.sink.PulsarSinkTube
+class: io.github.contube.pulsar.sink.PulsarSinkTube
 config:
   client:
     serviceUrl: 'pulsar://localhost:6650'

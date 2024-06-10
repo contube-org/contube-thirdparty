@@ -14,7 +14,7 @@ var log4jVersion = "2.14.1"
 
 allprojects {
     buildDir = File("${rootProject.buildDir}/${name}")
-    group = "com.zikeyang.contube"
+    group = "io.github.contube-org"
     version = "1.0-SNAPSHOT"
 }
 
@@ -36,7 +36,7 @@ subprojects {
     }
 
     dependencies {
-        api("com.zikeyang.contube:contube-common:$contubeVersion")
+        api("io.github.contube-org:contube-common:$contubeVersion")
 
         testImplementation(platform("org.junit:junit-bom:5.9.1"))
         testImplementation("org.junit.jupiter:junit-jupiter")
@@ -80,7 +80,7 @@ project(":contube-pulsar") {
 project(":contube-pulsar-runtime") {
     dependencies {
         implementation(project(":contube-pulsar"))
-        implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
+        implementation("io.github.contube-org:contube-runtime:$contubeVersion")
         runtimeOnly("org.apache.logging.log4j:log4j-core:$log4jVersion")
     }
 }
@@ -102,7 +102,7 @@ project(":contube-kafka") {
 project(":contube-kafka-runtime") {
     dependencies {
         implementation(project(":contube-kafka"))
-        implementation("com.zikeyang.contube:contube-runtime:$contubeVersion")
+        implementation("io.github.contube-org:contube-runtime:$contubeVersion")
         runtimeOnly("org.apache.logging.log4j:log4j-core:$log4jVersion")
         runtimeOnly("io.debezium:debezium-connector-mongodb:1.9.7.Final")
     }

@@ -1,6 +1,6 @@
 name: pulsar-source
 type: source
-class: com.zikeyang.contube.pulsar.source.PulsarSourceTube
+class: io.github.contube.pulsar.source.PulsarSourceTube
 sinkTubeName: pulsar-sink
 config:
   client:

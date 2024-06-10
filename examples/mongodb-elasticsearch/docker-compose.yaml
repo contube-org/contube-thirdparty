@@ -23,7 +23,7 @@ services:
     contube-test:
       image: contube/contube-all
       volumes:
-        - ./docker-example:/contube/tubes
+        - ./tubes:/contube/tubes
       depends_on:
         - mongodb
         - elastic-search
