@@ -1,6 +1,6 @@
 name: mongo-source
 type: source
-class: com.zikeyang.contube.kafka.connect.source.KafkaConnectSourceTube
+class: io.github.contube.kafka.connect.source.KafkaConnectSourceTube
 sinkTubeName: es-sink
 config:
   mongodb.hosts: "rs0/mongodb:27017"
